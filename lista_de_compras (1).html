@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4caf50">
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function() {
+        navigator.serviceWorker.register("service-worker.js");
+      });
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🥕 Lista de Compras 🛒</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff8e1;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      color: #4caf50;
+      margin-bottom: 20px;
+    }
+    #input-area {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+    #input-item {
+      width: 70%;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #c8e6c9;
+      border-radius: 5px;
+    }
+    #add-btn {
+      padding: 10px 15px;
+      font-size: 16px;
+      background-color: #66bb6a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #ffffff;
+      margin: 8px 0;
+      padding: 12px;
+      border-left: 5px solid #aed581;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+      transition: 0.2s;
+    }
+    li.comprado {
+      text-decoration: line-through;
+      color: gray;
+      background-color: #f1f8e9;
+    }
+    .remove-btn {
+      background-color: #ef5350;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .emoji {
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🥕 Lista de Compras 🛒</h1>
+  <div id="input-area">
+    <input type="text" id="input-item" placeholder="Ex: 🍌 Banana, 🥦 Brócolis..." />
+    <button id="add-btn">Adicionar</button>
+  </div>
+  <ul id="lista"></ul>
+
+  <script>
+    const input = document.getElementById("input-item");
+    const lista = document.getElementById("lista");
+    const addBtn = document.getElementById("add-btn");
+
+    // Carregar lista salva
+    window.addEventListener("load", () => {
+      const itensSalvos = JSON.parse(localStorage.getItem("listaCompras")) || [];
+      itensSalvos.forEach(item => criarItem(item.texto, item.comprado));
+    });
+
+    addBtn.addEventListener("click", adicionarItem);
+    input.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") adicionarItem();
+    });
+
+    function adicionarItem() {
+      const texto = input.value.trim();
+      if (texto === "") return;
+      criarItem(texto, false);
+      input.value = "";
+      salvarLista();
+    }
+
+    function criarItem(texto, comprado) {
+      const li = document.createElement("li");
+      li.textContent = texto;
+      if (comprado) li.classList.add("comprado");
+
+      li.addEventListener("click", () => {
+        li.classList.toggle("comprado");
+        salvarLista();
+      });
+
+      const remover = document.createElement("button");
+      remover.textContent = "Remover";
+      remover.className = "remove-btn";
+      remover.addEventListener("click", (e) => {
+        e.stopPropagation();
+        lista.removeChild(li);
+        salvarLista();
+      });
+
+      li.appendChild(remover);
+      lista.appendChild(li);
+    }
+
+    function salvarLista() {
+      const itens = [];
+      lista.querySelectorAll("li").forEach(li => {
+        itens.push({
+          texto: li.firstChild.textContent.trim(),
+          comprado: li.classList.contains("comprado")
+        });
+      });
+      localStorage.setItem("listaCompras", JSON.stringify(itens));
+    }
+  </script>
+</body>
+</html>
